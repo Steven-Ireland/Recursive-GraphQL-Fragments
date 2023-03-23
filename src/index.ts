@@ -55,6 +55,8 @@ const recursiveVisitor = (fragments: FragmentMap) => ({
       if (depth > 0) {
         // Add depth - 1 directive to fragments of same name in nested spread
         returnedFragment = appendDepth(baseFragment, directive, depth -1);
+      } else {
+        returnedFragment = removeNestedFragment(baseFragment);
       }
 
       
@@ -95,3 +97,33 @@ export const appendDepth = (node: FragmentDefinitionNode, directive: DirectiveNo
     }
   })
 };
+
+const removeNestedFragment = (fragmentNode: FragmentDefinitionNode) => {
+  return visit(fragmentNode, {
+    FragmentSpread: {
+      leave(node) {
+        if (node.name.value === fragmentNode.name.value) {
+          return null;
+        } else return;
+      }
+    },
+    Field: {
+      leave(node) {
+        if (!node.selectionSet?.selections) return;
+
+        const selections =  node.selectionSet?.selections.filter(
+              s => !(s.kind === Kind.FRAGMENT_SPREAD && s.name.value === fragmentNode.name.value));
+
+        if (selections.length == 0) return null;
+
+        return {
+          ...node,
+          selectionSet: {
+            ...node.selectionSet,
+            selections
+          }
+        }
+      }
+    }
+  })
+}
