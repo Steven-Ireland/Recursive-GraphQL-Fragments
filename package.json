@@ -1,7 +1,7 @@
 {
-  "name": "@graphql-codegen/recursive-graphql-fragments",
+  "name": "recursive-graphql-fragments",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "build/index.js",
   "license": "MIT",
   "devDependencies": {
     "@graphql-codegen/plugin-helpers": "^4.0.0",

@@ -1,5 +1,5 @@
 import { oldVisit, PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
-import {astFromValue, ASTNode, concatAST, DirectiveNode, FragmentDefinitionNode, FragmentSpreadNode, GraphQLDirective, IntValueNode, Kind, visit} from 'graphql'
+import {astFromValue, ASTNode, concatAST, DirectiveNode, FragmentDefinitionNode, FragmentSpreadNode, GraphQLDirective, IntValueNode, Kind, print, visit} from 'graphql'
 
 const DIRECTIVE_NAME = "recursive";
 
@@ -21,12 +21,24 @@ export const transform = ({documents}: {documents: Types.DocumentFile[]}) => {
       document = visit(document, recursiveVisitor(fragmentMap));
     }
 
+    // Strip recursive fragments from result
+    document = visit(document, {
+      FragmentDefinition: {
+        leave(node) {
+          const found = node.directives?.filter(d => d.name.value === DIRECTIVE_NAME);
+          if (found && found.length > 0) {
+            return null;
+          }
+        }
+      }
+    })
+
     const ret = {
       ...documentFile,
       document
     };
 
-    console.log(JSON.stringify(ret.document, null, 2));
+    console.log(print(document));
 
     return ret;
   })
@@ -68,10 +80,14 @@ const recursiveVisitor = (fragments: FragmentMap) => ({
   }
 });
 
-export const appendDepth = (node: FragmentDefinitionNode, directive: DirectiveNode, newDepth: number) => {
-  return visit(node, {
+export const appendDepth = (fragmentNode: FragmentDefinitionNode, directive: DirectiveNode, newDepth: number) => {
+  return visit(fragmentNode, {
     FragmentSpread: {
       leave(node) {
+        if (node.name.value != fragmentNode.name.value) {
+          return;
+        }
+
         return {
           ...node,
           directives: [
