@@ -1,6 +1,5 @@
 import { oldVisit, PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
 import {astFromValue, ASTNode, concatAST, DirectiveNode, FragmentDefinitionNode, FragmentSpreadNode, GraphQLDirective, IntValueNode, Kind, visit} from 'graphql'
-import gql from 'graphql-tag';
 
 const DIRECTIVE_NAME = "recursive";
 

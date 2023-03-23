@@ -1,6 +1,6 @@
 import { buildSchema } from 'graphql';
 import {gql} from 'graphql-tag';
-import {transform} from '../recursive-document';
+import {transform} from '../src/index';
 
 const query = gql`
   fragment NestingDollFields on NestingDoll {
